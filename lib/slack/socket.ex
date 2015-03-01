@@ -35,14 +35,6 @@ defmodule Slack.Socket do
     {:ok, state}
   end
 
-  def websocket_info(body={:send, _data}, _connection, state) do
-    {:ok, new_state} = state.module.handle_info(body,
-                                                state.slack_state, 
-                                                state.module_state)
-
-    {:ok, Map.put(state, :handler_state, new_state)}
-  end
-
   def websocket_terminate(reason, _connection, state) do
     state.module.handle_close(
       reason,

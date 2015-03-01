@@ -90,6 +90,7 @@ defmodule Slack do
   """
   def start_link(module, token, initial_state, options \\ %{}) do
     options = Map.merge(default_options, options)
+    ws_options = Map.get(options, :ws_options, [])
 
     {:ok, rtm_response} = options.rtm.start(token)
     url = rtm_response.url |> String.to_char_list
@@ -103,7 +104,8 @@ defmodule Slack do
     options.websocket.start_link(
       url,
       Slack.Socket,
-      bootstrap_state
+      bootstrap_state,
+      ws_options
     )
   end
 
