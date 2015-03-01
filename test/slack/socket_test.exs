@@ -66,11 +66,40 @@ defmodule Slack.SocketTest do
       Slack.Socket.websocket_handle({:ping, "cookie!"}, "foo", state)
   end
 
+  test "it handles info messages" do
+    state = %{
+      module: __MODULE__.FakeHandler,
+      module_state: [],
+      slack_state: %Slack.State{}
+    }
+
+    {:ok, result} = Slack.Socket.websocket_info({:send,""}, "foo", state)
+
+    assert result.handler_state == ["info"]
+  end
+
+  test "it recieves messages" do
+    state = %{
+      module: __MODULE__.FakeHandler,
+      module_state: [],
+      slack_state: %Slack.State{}
+    }
+    assert {:ok, state} == Slack.Socket.websocket_info({:state, self()}, "foo", state)
+    assert_received {:slack_state, state}
+  end
+
   defmodule FakeHandler do
     def handle_message({:type, "presence_change", _message}, slack, state) do
       ^slack = %Slack.State{}
 
       new_state = state ++ ["bar"]
+      {:ok, new_state}
+    end
+
+    def handle_info({:send, _data}, slack, state) do
+      ^slack = %Slack.State{}
+
+      new_state = state ++ ["info"]
       {:ok, new_state}
     end
   end
